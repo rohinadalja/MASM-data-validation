@@ -79,7 +79,163 @@ main PROC
 	call  CrLf
 	call  CrLf
 
+; Get first number
+startBlock:									; Program will restart from here when requested
+	call  CrLf
+	mov   edx, OFFSET prompt_1
+	call  WriteString
+	call  ReadInt
+	mov   num_1, eax
 
+; Get second number
+	mov   edx, OFFSET prompt_2
+	call  WriteString
+	call  ReadInt
+	mov   num_2, eax
+	call  CrLf
+	call  CrLf
+
+; Validate that the second number is less than the first
+	mov   eax, num_1
+	mov   ebx, num_2
+	cmp   eax, ebx
+	jl    errorBlock						; If validation fails, jump to block showing error message
+
+; Calculate the sum
+	mov   eax, num_1
+	add   eax, num_2
+	mov   result_sum, eax
+
+; Calculate the difference
+	mov   eax, num_1
+	sub   eax, num_2
+	mov   result_dif, eax
+
+; Calculate the product
+	mov   eax, num_1
+	mov   ebx, num_2
+	mul   ebx
+	mov   result_mul, eax
+
+; Calculate the quotient
+	mov   eax, num_1
+	cdq										; Remainder will go in EDX
+	mov   ebx, num_2
+	sub	  edx, edx
+	div   ebx
+	mov   result_div, eax
+
+; Calculate the remainder
+	mov   result_rem, edx
+
+; Convert the quotient to floating point (rounded to .001)
+	fld     EC3_conv
+	fiadd   num_1
+	fstp    EC3_num1
+	fld     EC3_num1
+	fidiv   num_2
+	fstp    result_EC3
+	fld     result_EC3
+	fmul    round1
+	frndint									; Round to integer
+	fdiv    round2
+	fst     result_EC3
+
+; Display result message
+	mov   edx, OFFSET show_res
+	call  WriteString
+	call  CrLf
+
+; Display the calculated sum
+	mov   eax, num_1
+	call  WriteDec
+	mov   edx, OFFSET show_sum
+	call  WriteString
+	mov   eax, num_2
+	call  WriteDec
+	mov   edx, OFFSET show_ans
+	call  WriteString
+	mov   eax, result_sum
+	call  WriteDec
+	call  CrLf
+
+; Display the calculated difference
+	mov   eax, num_1
+	call  WriteDec
+	mov   edx, OFFSET show_dif
+	call  WriteString
+	mov   eax, num_2
+	call  WriteDec
+	mov   edx, OFFSET show_ans
+	call  WriteString
+	mov   eax, result_dif
+	call  WriteDec
+	call  CrLf
+
+; Display the calculated product
+	mov   eax, num_1
+	call  WriteDec
+	mov   edx, OFFSET show_mul
+	call  WriteString
+	mov   eax, num_2
+	call  WriteDec
+	mov   edx, OFFSET show_ans
+	call  WriteString
+	mov   eax, result_mul
+	call  WriteDec
+	call  CrLf
+
+; Display the calculated quotient
+	mov   eax, num_1
+	call  WriteDec
+	mov   edx, OFFSET show_div
+	call  WriteString
+	mov   eax, num_2
+	call  WriteDec
+	mov   edx, OFFSET show_ans
+	call  WriteString
+	mov   eax, result_div
+	call  WriteDec
+
+; Display the calculated remainder
+	mov   edx, OFFSET show_rem
+	call  WriteString
+	mov   eax, result_rem
+	call  WriteDec
+	call  CrLf
+
+; EC #3: Display the calculated floating point division result (rounded to .001)
+	mov   edx, OFFSET show_EC3
+	call  WriteString
+	mov	  edx, OFFSET result_EC3
+	call  WriteFloat
+	call  CrLf
+	call  CrLf
+
+; Ask user if they want to continue with another calculation
+continueBlock:
+	mov   edx, OFFSET prompt_3
+	call  WriteString
+	call  ReadInt
+	mov   ebx, no_loop
+	cmp	  eax, ebx
+	jne   startBlock						; User wants to continue so jump to starting again
+
+; Display goodbye message and exit
+;goodbyeBlock:
+	call  CrLf
+	mov   edx, OFFSET goodbye
+	call  WriteString
+	call  CrLf
+	exit									; Exit out to the operating system
+
+; Display error & jump to goodbye as EC #2 validation was not met
+errorBlock:
+	mov   edx, OFFSET error_EC2
+	call  WriteString
+	call  CrLf
+	call  CrLf
+	jmp   continueBlock
 main ENDP
 
 END main
